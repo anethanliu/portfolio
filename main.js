@@ -1,76 +1,59 @@
 /* ═══════════════════════════════════════════════════════════
    main.js — Router, fragments, animations, scroll spy
    ═══════════════════════════════════════════════════════════ */
+var introFinished = false;
 
+if (history.scrollRestoration) {
+  history.scrollRestoration = 'manual';
+}
 
-/* ── Project Data ────────────────────────────────────────────
-   Single source of truth for all project content.          */
-var projects = {
-  rp1:{
-    title:'M.S. Thesis',
-    meta:'Research Project · 2026–Present',
-    tags:['Python','ML','NLP'],
-    overview:'Investigating the recoil perturbations of orbiting spacecraft as a budgeted resource in multi-mission architecture sequences.',
-    methods:'Description of methodological approach, tools, datasets, and analytical frameworks.',
-    results:'Summary of key findings and contributions.',
-    links:'<a href="#">↗ Live Demo</a> &nbsp;·&nbsp; <a href="#">⎇ GitHub</a>'
-  },
-  pp1:{
-    title:'Letter Automation',
-    meta:'Professional Project · 2026',
-    tags:['Dataset','Annotation','CC-BY'],
-    overview:'Letter creation tool for the US Department of State that uniformly produces letters for public correspondence.',
-    methods:'Data collected from multiple sources using a structured protocol.',
-    results:'Released publicly and used in several peer-reviewed studies.',
-    links:'<a href="#">↗ Repository</a>'
-  },
-  pp2:{
-    title:'Capacity/Demand Model',
-    meta:'Professional Project · 2025',
-    tags:['Collaboration','MATLAB'],
-    overview:'Forecasting tool for the US Department of State that forecasts office capacity to complete current and projected demand.',
-    methods:'Coordinated data collection across multiple sites. Analysis performed in MATLAB.',
-    results:'Produced joint publications and established a continuing research consortium.',
-    links:'<a href="#">↗ Project Website</a>'
-  },
-  pp3:{
-    title:'Production Tracker',
-    meta:'Professional Project · 2025',
-    tags:['Excel','Power Platforms','Process Improvements'],
-    overview:'Tracking tool for high-priority casework at the Los Angeles Passport Agency.',
-    methods:'Developed in Excel, then automated using Microsoft Power suite and Auto Hotkeys.',
-    results:'Enabled in-person service to over 500 applicants per day in the Southern California region.',
-    links:'<a href="#">↗ Live Tool</a>'
-  },
-  cp1:{
-    title:'Course Software',
-    meta:'Course Project · DEPT 520 · 2021',
-    tags:['Education','Python','Jupyter'],
-    overview:'Open educational software developed for a graduate seminar, adopted by two other institutions.',
-    methods:'Built as Jupyter notebooks with a Python backend, designed for modularity.',
-    results:'Adopted by multiple universities and cited as an educational resource.',
-    links:'<a href="#">↗ Course Page</a>'
-  },
-  cp2:{
-    title:'Capstone Project',
-    meta:'Course Project · DEPT XXX · 2020',
-    tags:['R','Statistics','Visualization'],
-    overview:'Final capstone project addressing a research problem using statistical methods. Received highest marks.',
-    methods:'Applied statistical methods using R with ggplot2 visualizations.',
-    results:'Highest grade in cohort. Presented at departmental seminar.',
-    links:'<a href="#">↗ Report PDF</a>'
-  },
-  cp3:{
-    title:'Seminar Paper',
-    meta:'Course Project · DEPT XXX · 2019',
-    tags:['LaTeX','Literature Review'],
-    overview:'A seminar paper examining a research topic that has since been cited in subsequent works.',
-    methods:'Systematic literature review synthesized thematically across multiple sources.',
-    results:'Subsequently cited in peer-reviewed works. Formed foundation of later research.',
-    links:'<a href="#">↗ Paper PDF</a>'
+  function updateParallax() {
+    var active = document.querySelector('.page-view.active');
+    if (!active) return;
+    active.querySelectorAll('.bg-dynamic-img').forEach(function(img) {
+      var rect = img.closest('.bg-dynamic').getBoundingClientRect();
+      var centerY = rect.top + rect.height / 2 - window.innerHeight / 2;
+      img.style.transform = 'translateY(' + (centerY * 0.08) + 'px)';
+    });
   }
-};
 
+/* ── Custom Cursor ───────────────────────────────────────────
+   Black circle follows cursor with slight lag.
+   mix-blend-mode:difference inverts colors beneath it.     
+function initCursor() {
+  var cursor = document.createElement('div');
+  cursor.className = 'cursor';
+  document.body.appendChild(cursor);
+
+  var mouseX = 0, mouseY = 0;
+  var curX = 0, curY = 0;
+
+  window.addEventListener('mousemove', function(e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  document.addEventListener('mouseover', function(e) {
+    if (e.target.matches('a, button, .proj-card, .exp-arrow, .exp-dot, .nav-tab, .sidebar-nav-item')) {
+      cursor.classList.add('grow');
+    }
+  });
+  document.addEventListener('mouseout', function(e) {
+    if (e.target.matches('a, button, .proj-card, .exp-arrow, .exp-dot, .nav-tab, .sidebar-nav-item')) {
+      cursor.classList.remove('grow');
+    }
+  });
+
+  function loop() {
+    curX += (mouseX - curX) * 0.12;
+    curY += (mouseY - curY) * 0.12;
+    cursor.style.left = (curX - 10) + 'px';
+    cursor.style.top = (curY - 10) + 'px';
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+*/
 
 /* ── Page Router ─────────────────────────────────────────────
    Slides between page-view divs without reloading.
@@ -84,37 +67,40 @@ function navigateTo(pageId, direction) {
   var next = document.getElementById('page-' + pageId);
   if (!next || current === next) return;
 
-  currentPage = pageId;
-  setActiveNav();
+ currentPage = pageId;
 
-  if (current) current.classList.remove('active');
-  next.classList.add('active');
-  window.scrollTo(0, 0);
-}
-
-
-function openProject(id) {
-  var p = projects[id];
-  if (!p) return;
-
-  document.getElementById('detail-title').textContent    = p.title;
-  document.getElementById('detail-meta').textContent     = p.meta;
-  document.getElementById('detail-overview').textContent = p.overview;
-  document.getElementById('detail-methods').textContent  = p.methods;
-  document.getElementById('detail-results').textContent  = p.results;
-  document.getElementById('detail-links').innerHTML      = p.links;
-
-  var tags = '';
-  for (var i = 0; i < p.tags.length; i++) {
-    tags += '<span class="ptag">' + p.tags[i] + '</span>';
+  if (current) {
+    current.style.transition = 'opacity .3s ease';
+    void current.offsetWidth;
+    current.style.opacity = '0';
+    setTimeout(function() {
+      current.classList.remove('active');
+      current.style.opacity = '';
+      current.style.transition = '';
+      next.style.opacity = '0';
+      next.classList.add('active');
+      next.style.transition = 'opacity .3s ease';
+      void next.offsetWidth;
+      next.style.opacity = '1';
+      setActiveNav();
+      history.pushState({page: pageId}, '', '#' + pageId);
+      window.scrollTo(0, 0);
+      smoothTargetY = 0;
+      smoothCurrentY = 0;
+      next.querySelectorAll('.body-animate').forEach(function(el) {
+        el.classList.add('revealed');
+        el.style.transition = 'none';
+        el.style.transform = 'none';
+      });
+    }, 300);
+  } else {
+    next.classList.add('active');
+    setActiveNav();
+    history.pushState({page: pageId}, '', '#' + pageId);
+    window.scrollTo(0, 0);
+    smoothTargetY = 0;
+    smoothCurrentY = 0;
   }
-  document.getElementById('detail-tags').innerHTML = tags;
-
-  pageHistory.push(id);
-  /* Small delay ensures DOM is populated before animation  */
-  requestAnimationFrame(function() {
-    navigateTo('project-detail', 'forward');
-  });
 }
 
 function goBack() {
@@ -141,11 +127,79 @@ function readHash() {
   }
 }
 
+/* ── Index Nav ──────────────────────────────────────────────
+   Marks correct tab and sidebar item based on currentPage.  */
+function revealBodyAnimate() {
+  if (!introFinished) return;
+  var active = document.querySelector('.page-view.active');
+  if (!active) return;
+  active.querySelectorAll('.body-animate').forEach(function(el, i) {
+    setTimeout(function() {
+      el.classList.add('revealed');
+    }, i * 150);
+  });
+}
+
+function loadAbout() {
+  fetch('pages/about.html')
+    .then(function(res) { return res.text(); })
+    .then(function(html) {
+      requestIdleCallback(function() {
+        document.getElementById('page-about').innerHTML = html;
+        initExpCarousel();
+        initScrollSpy();
+        revealBodyAnimate();
+      });
+    });
+}
+
+function loadPublications() {
+  fetch('pages/publications.html')
+    .then(function(res) { return res.text(); })
+    .then(function(html) {
+      requestIdleCallback(function() {
+        document.getElementById('page-publications').innerHTML = html;
+      });
+    });
+}
+
+function loadProjects() {
+  fetch('pages/projects.html')
+    .then(function(res) { return res.text(); })
+    .then(function(html) {
+      requestIdleCallback(function() {
+        document.getElementById('page-projects').innerHTML = html;
+        revealBodyAnimate();
+        document.querySelectorAll('.proj-card-hover-img').forEach(function(img) {
+          img.decode();
+        });
+      });
+    });
+}
+
+function loadProjectDetail(id) {
+  fetch('pages/projects/projectpages/' + id + '-page.html')
+    .then(function(res) { return res.text(); })
+    .then(function(html) {
+      requestIdleCallback(function() {
+        document.getElementById('page-' + id).innerHTML = html;
+      });
+    });
+}
+
+function loadProjectDetail(id) {
+  fetch('pages/projects/projectpages/' + id + '-page.html')
+    .then(function(res) { return res.text(); })
+    .then(function(html) {
+      document.getElementById('page-' + id).innerHTML = html;
+    });
+}
 
 /* ── Active Nav ──────────────────────────────────────────────
    Marks correct tab and sidebar item based on currentPage.  */
 function setActiveNav() {
-  var onProjects = (currentPage === 'projects' || currentPage === 'project-detail');
+  var projectSlugs = ['rp1','pp1','ap1'];
+  var onProjects = (currentPage === 'projects' || projectSlugs.indexOf(currentPage) !== -1);
 
   var tabs = document.querySelectorAll('.nav-tab');
   tabs.forEach(function(t) { t.classList.remove('active'); });
@@ -229,30 +283,45 @@ function runIntro() {
 
   if (performance.navigation.type !== 1 && sessionStorage.getItem('introDone')) {
     overlay.remove();
+    document.getElementById('custom-scrollbar-thumb').classList.add('visible');
+    document.querySelectorAll('#custom-scrollbar-arrow').forEach(function(a){ a.classList.add('visible'); });
     document.body.classList.remove('intro-active');
     document.querySelectorAll('.body-animate').forEach(function(el) {
       el.classList.add('revealed');
     });
+    var cur = document.querySelector('.cursor');
+    if (cur) cur.style.opacity = '1';
     return;
   }
   sessionStorage.setItem('introDone', 'true');
 
   setTimeout(function() { overlay.classList.add('name-visible'); }, 100);
-  setTimeout(function() { overlay.classList.add('rise'); }, 1800);
-  setTimeout(function() {
+  setTimeout(function() { overlay.classList.add('rise'); }, 1500);
+setTimeout(function() {
     overlay.remove();
+    document.getElementById('custom-scrollbar-thumb').classList.add('visible');
+    document.querySelectorAll('#custom-scrollbar-arrow').forEach(function(a){ a.classList.add('visible'); });
     document.querySelector('.shell-intro').classList.add('revealed');
     setTimeout(function() {
       document.getElementById('sidebar-container').classList.add('revealed');
-      document.getElementById('main-columns').classList.add('revealed');
+    }, 0);
+    setTimeout(function() {
+      document.getElementById('header-container').classList.add('revealed');
     }, 400);
     setTimeout(function() {
-      document.querySelectorAll('.body-animate').forEach(function(el) {
-        el.classList.add('revealed');
-      });
       document.body.classList.remove('intro-active');
-    }, 600);
-  }, 3000);
+      introFinished = true;
+      revealBodyAnimate();
+      document.querySelectorAll('.page-view:not(.active) .body-animate').forEach(function(el) {
+        el.classList.add('revealed');
+        el.style.transition = 'none';
+        el.style.transform = 'none';
+      });
+    }, 550);
+    setTimeout(function() {
+      document.getElementById('main-columns').classList.add('revealed');
+    }, 700);
+  }, 2400);
 }
 
 
@@ -265,6 +334,7 @@ function loadSidebar() {
       document.getElementById('sidebar-container').innerHTML = html;
       setActiveNav();
       initScrollSpy();
+      initWipTooltips();
       if (!document.getElementById('intro-overlay')) {
         document.getElementById('sidebar-container').classList.add('revealed');
         document.querySelector('.shell').classList.add('revealed');
@@ -280,6 +350,9 @@ function loadHeader() {
     .then(function(html) {
       document.getElementById('header-container').innerHTML = html;
       setActiveNav();
+      if (!document.getElementById('intro-overlay')) {
+        document.getElementById('header-container').classList.add('revealed');
+      }      
     });
 }
 
@@ -288,19 +361,166 @@ function loadFooter() {
     .then(function(res) { return res.text(); })
     .then(function(html) {
       document.getElementById('footer-container').innerHTML = html;
-      setTimeout(function() {
-      document.getElementById('footer-container').classList.add('revealed');
-      }, 500);
+      document.querySelectorAll('#footer-container .body-animate').forEach(function(el) {
+        el.classList.add('revealed');
+      });
     });
+}
+
+/* ── Smooth Scroll ───────────────────────────────────────── */
+var smoothTargetY = 0;
+var smoothCurrentY = 0;
+
+function initSmoothScroll() {
+  var ease = 0.08;
+  var running = false;
+
+  window.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    smoothTargetY += e.deltaY;
+    smoothTargetY = Math.max(0, Math.min(smoothTargetY, document.body.scrollHeight - window.innerHeight));
+    if (!running) {
+      running = true;
+      loop();
+    }
+  }, { passive: false });
+
+  function loop() {
+    smoothCurrentY += (smoothTargetY - smoothCurrentY) * ease;
+    window.scrollTo(0, smoothCurrentY);
+    if (Math.abs(smoothTargetY - smoothCurrentY) > 0.5) {
+      requestAnimationFrame(loop);
+    } else {
+      smoothCurrentY = smoothTargetY;
+      window.scrollTo(0, smoothCurrentY);
+      running = false;
+    }
+  }
+}
+
+/* ── WIP Tooltip Cursor Follow ───────────────────────────── */
+function initWipTooltips() {
+  document.querySelectorAll('.wip-tooltip').forEach(function(el) {
+    var tip = document.createElement('div');
+    tip.className = 'wip-tip';
+    tip.textContent = 'Work in Progress';
+    document.body.appendChild(tip);
+
+    el.addEventListener('mouseenter', function() {
+      tip.style.opacity = '1';
+    });
+    el.addEventListener('mouseleave', function() {
+      tip.style.opacity = '0';
+    });
+    el.addEventListener('mousemove', function(e) {
+      tip.style.left = (e.clientX - 100) + 'px';
+      tip.style.top = (e.clientY - 28) + 'px';
+    });
+  });
+}
+
+/* ── Experience Carousel ─────────────────────────────────── */
+var expIndex = 0;
+
+function initExpCarousel() {
+  var cards = document.querySelectorAll('.exp-card');
+  var dotsEl = document.getElementById('exp-dots');
+  if (!dotsEl) return;
+
+  cards.forEach(function(_, i) {
+    var dot = document.createElement('div');
+    dot.className = 'exp-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = function() { goToExpCard(i); };
+    dotsEl.appendChild(dot);
+  });
+}
+
+function slideExpCard(dir) {
+  var cards = document.querySelectorAll('.exp-card');
+  expIndex = Math.max(0, Math.min(expIndex + dir, cards.length - 1));
+  updateExpCarousel();
+}
+
+function goToExpCard(i) {
+  expIndex = i;
+  updateExpCarousel();
+}
+
+function updateExpCarousel() {
+  var track = document.getElementById('exp-track');
+  if (!track) return;
+  track.style.transform = 'translateX(-' + (expIndex * 100) + '%)';
+  document.querySelectorAll('.exp-dot').forEach(function(d, i) {
+    d.classList.toggle('active', i === expIndex);
+  });
 }
 
 
 /* ── Init ────────────────────────────────────────────────────
-   Single load listener.                                     */
+   Single load listener.        initCursor();                               */
 window.addEventListener('load', function() {
+  var bar = document.createElement('div');
+  bar.id = 'custom-scrollbar';
+
+  var arrowUp = document.createElement('div');
+  arrowUp.id = 'custom-scrollbar-arrow';
+  arrowUp.innerHTML = '▲';
+  bar.appendChild(arrowUp);
+
+  var track = document.createElement('div');
+  track.id = 'custom-scrollbar-track';
+  bar.appendChild(track);
+
+  var thumb = document.createElement('div');
+  thumb.id = 'custom-scrollbar-thumb';
+  track.appendChild(thumb);
+
+  var arrowDown = document.createElement('div');
+  arrowDown.id = 'custom-scrollbar-arrow';
+  arrowDown.innerHTML = '▼';
+  bar.appendChild(arrowDown);
+
+  document.body.appendChild(bar);
+
+  function updateThumb() {
+    var trackH = track.offsetHeight;
+    var scrollTop = window.pageYOffset;
+    var docHeight = document.body.scrollHeight - window.innerHeight;
+    var thumbHeight = Math.max(40, (window.innerHeight / document.body.scrollHeight) * trackH);
+    var thumbTop = docHeight > 0 ? (scrollTop / docHeight) * (trackH - thumbHeight) : 0;
+    thumb.style.height = thumbHeight + 'px';
+    thumb.style.top = thumbTop + 'px';
+  }
+  window.addEventListener('scroll', updateThumb);
+  window.addEventListener('resize', updateThumb);
+  setTimeout(updateThumb, 2500);
+  var scrollInterval;
+  arrowUp.addEventListener('mousedown', function() {
+    scrollInterval = setInterval(function() {
+      smoothTargetY = Math.max(0, smoothTargetY - 40);
+    }, 50);
+  });
+  arrowDown.addEventListener('mousedown', function() {
+    scrollInterval = setInterval(function() {
+      smoothTargetY = Math.min(document.body.scrollHeight - window.innerHeight, smoothTargetY + 40);
+    }, 50);
+  });
+  document.addEventListener('mouseup', function() {
+    clearInterval(scrollInterval);
+  });
+
   setTimeout(function() { loadSidebar(); }, 200);
   loadHeader();
   setTimeout(function() { loadFooter(); }, 1200);
+  loadProjects();
+  loadAbout();
+  loadPublications();
+  loadProjectDetail('rp1');
+  loadProjectDetail('pp1');
+  loadProjectDetail('ap1');
   runIntro();
   readHash();
+  initWipTooltips();
+  initSmoothScroll();
+  window.addEventListener('scroll', updateParallax, { passive: true });
 });
