@@ -144,12 +144,10 @@ function loadAbout() {
   fetch('pages/about.html')
     .then(function(res) { return res.text(); })
     .then(function(html) {
-      requestIdleCallback(function() {
-        document.getElementById('page-about').innerHTML = html;
-        initExpCarousel();
-        initScrollSpy();
-        revealBodyAnimate();
-      });
+      document.getElementById('page-about').innerHTML = html;
+      initExpCarousel();
+      initScrollSpy();
+      revealBodyAnimate();
     });
 }
 
@@ -157,9 +155,7 @@ function loadPublications() {
   fetch('pages/publications.html')
     .then(function(res) { return res.text(); })
     .then(function(html) {
-      requestIdleCallback(function() {
-        document.getElementById('page-publications').innerHTML = html;
-      });
+      document.getElementById('page-publications').innerHTML = html;
     });
 }
 
@@ -167,12 +163,10 @@ function loadProjects() {
   fetch('pages/projects.html')
     .then(function(res) { return res.text(); })
     .then(function(html) {
-      requestIdleCallback(function() {
-        document.getElementById('page-projects').innerHTML = html;
-        revealBodyAnimate();
-        document.querySelectorAll('.proj-card-hover-img').forEach(function(img) {
-          img.decode();
-        });
+      document.getElementById('page-projects').innerHTML = html;
+      revealBodyAnimate();
+      document.querySelectorAll('.proj-card-hover-img').forEach(function(img) {
+        img.decode();
       });
     });
 }
