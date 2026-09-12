@@ -275,7 +275,7 @@ function runIntro() {
   var overlay = document.getElementById('intro-overlay');
   if (!overlay) return;
 
-  if (performance.navigation.type !== 1 && sessionStorage.getItem('introDone')) {
+ if (sessionStorage.getItem('introDone') && document.referrer !== '') {
     overlay.remove();
     document.getElementById('custom-scrollbar-thumb').classList.add('visible');
     document.querySelectorAll('#custom-scrollbar-arrow').forEach(function(a){ a.classList.add('visible'); });
