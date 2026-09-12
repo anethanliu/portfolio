@@ -35,7 +35,7 @@ html::-webkit-scrollbar{
   bottom:4px;
   width:12px;
   height:calc(100% - 8px);
-  z-index:9999;
+  z-index:9;
   pointer-events:none;
   display:flex;
   flex-direction:column;
@@ -44,6 +44,11 @@ html::-webkit-scrollbar{
 @media(max-width:768px){
   #custom-scrollbar{
     top:120px;
+    bottom:50px;
+    height:auto;
+  }
+  #custom-scrollbar-track{
+    margin-bottom:10px;
   }
 }
 #custom-scrollbar-arrow{
@@ -97,6 +102,11 @@ a:hover{text-decoration:underline}
   background:#fff;
   position:relative;
   align-items:flex-start;
+}
+@media(min-width:769px){
+  .shell{
+    padding-right:14px;
+  }
 }
 .shell-intro{
   transition:opacity .7s ease;
@@ -465,9 +475,11 @@ text-transform:uppercase;
   .sidebar{display:none}
   .main-title{display:block}
   .main-nav{display:flex;border-top:2px solid var(--ink)}
-  .shell{flex-direction:column}
+  .shell{flex-direction:column;width:100%;max-width:100%;}
   .columns{grid-template-columns:1fr}
   .columns-3{grid-template-columns:1fr}
+  .content{padding:1rem;width:100%;max-width:100%;box-sizing:border-box;}
+  .main{width:100%;max-width:100%;box-sizing:border-box;}
 }
 
 /* ── Print ───────────────────────────────────────────────── */
